@@ -7,11 +7,11 @@ from bs4 import BeautifulSoup
 session = requests.Session()
 session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/122.0.0.0'})
 
-sport_articles = [] # Store the tech articles here
+sport_articles = [] # Store the sport articles here
 
-# Only 1k articles from the tech category
-first_article_number_sport = 10000
-last_article_number_sport  = 10001
+# Only 1k articles from the sport category
+first_article_number_sport = 165600
+last_article_number_sport  = 166600
 
 for article_number_sport in range(first_article_number_sport, last_article_number_sport):
 
@@ -19,24 +19,24 @@ for article_number_sport in range(first_article_number_sport, last_article_numbe
     title = ''
 
     try:
-        url = f'https://tech.news.am/arm/news/{article_number_sport}/' # Article URL
+        url = f'https://sport.news.am/arm/news/{article_number_sport}/' # Article URL
         page = session.get(url, timeout=10)
 
         if page.status_code == 200:
             doc = BeautifulSoup(page.text, 'html.parser') # Get the HTML
-            print(doc.find('div', {'id': 'opennews'}))
+
             # ========= ARTICLE CONTENT ==========
             # Scrape the article content
-            # article_path = doc.find('div', {'class' : 'bodycontainer'})
-            # article_p_tags = article_path.find_all('p')
-            #
-            # for p_tag in article_p_tags:
-            #     full_text += p_tag.text
+            article_path = doc.find('div', {'id' : 'opennewstext'})
+            article_p_tags = article_path.find_all('p')
+
+            for p_tag in article_p_tags:
+                full_text += p_tag.text
 
             # ========= TITLE ==========
             # Scrape the article title
             title_path = doc.find('div', {'id' : 'opennews'})
-            title = title_path.h1
+            title = title_path.h1.text
 
             # Store everything here
             sport_articles.append({
@@ -60,9 +60,8 @@ for article_number_sport in range(first_article_number_sport, last_article_numbe
 
     # Save every 50 articles in case of interruptions.
     if len(sport_articles) % 50 == 0 and len(sport_articles) > 0:
-        pd.DataFrame(sport_articles).to_csv('tech_news_am.csv', index=False)
+        pd.DataFrame(sport_articles).to_csv('../../raw/sport_news_am.csv', index=False)
         print(f"Saved {len(sport_articles)} articles")
 
-
-print(page.text[:2000])
-print(sport_articles[0])
+# Save the final articles
+pd.DataFrame(sport_articles).to_csv('../../raw/sport_news_am.csv', index=False)
